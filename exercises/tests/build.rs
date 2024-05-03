@@ -11,11 +11,12 @@ fn main() {
         .unwrap()
         .as_secs(); // What's the use of this timestamp here?
 
-    println!("cargo:TEST_FOO={}", timestamp);
-
+    println!("cargo:rustc-env=TEST_FOO={}", timestamp);
+    // env::set_var("TEST_FOO", timestamp);
+    
     // In tests8, we should enable "pass" feature to make the
     // testcase return early. Fill in the command to tell
     // Cargo about that.
-    let your_command = "pass";
-    println!("cargo:{}", your_command);
+    
+    println!("cargo:rustc-cfg=feature=\"pass\"");
 }
