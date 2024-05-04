@@ -2,8 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
+use std::borrow::Borrow;
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,10 +71,68 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
+        // let mut new_link = LinkedList::new();
+        let len = list_a.length + list_b.length;
+        let mut a_opt = list_a.start;
+        let mut b_opt = list_b.start;
+        let mut start_opt: Option<NonNull<Node<T>>> = None;
+        let mut end_opt: Option<NonNull<Node<T>>> = None;
+        let mut cur_opt: Option<NonNull<Node<T>>> = start_opt;
+        while let (Some(a_ptr), Some(b_ptr)) = (a_opt, b_opt) {
+            let a = a_ptr.as_ptr();
+            let b = b_ptr.as_ptr();
+            let t = unsafe {
+                if (*a).val <= (*b).val {
+                    a_opt = (*a).next;
+                    a_ptr
+                } else {
+                    b_opt = (*b).next;
+                    b_ptr
+                }
+            };
+            if start_opt.is_none() {
+                start_opt = Some(t);
+                cur_opt = start_opt
+            } else {
+                match cur_opt {
+                    Some(node_ptr)=> {
+                        unsafe{
+                            (*node_ptr.as_ptr()).next = Some(t);
+                            cur_opt = (*node_ptr.as_ptr()).next;
+                        }
+                    },
+                    None => ()
+                }
+            }
+        }
+
+        let mut t: Option<NonNull<Node<T>>> = None;
+        if a_opt.is_some() {
+            t = a_opt;
+        } else {
+            t = b_opt;
+        }
+
+        match cur_opt {
+            Some(node_ptr) => {
+                unsafe {
+                    (*node_ptr.as_ptr()).next = t;
+                }
+            },
+            None => ()
+        }
+
+        end_opt = cur_opt;
+        while unsafe { (*end_opt.unwrap().as_ptr()).next != None} {
+            unsafe {
+                end_opt = (*end_opt.unwrap().as_ptr()).next;
+            }
+        }
+
 		Self {
             length: 0,
-            start: None,
-            end: None,
+            start: start_opt,
+            end: end_opt,
         }
 	}
 }

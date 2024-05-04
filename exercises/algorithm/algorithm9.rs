@@ -2,10 +2,10 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::process::id;
 
 pub struct Heap<T>
 where
@@ -16,6 +16,7 @@ where
     comparator: fn(&T, &T) -> bool,
 }
 
+// 从1开始使用， 2n是左儿子， 2n + 1是右儿子， n/2 是祖先
 impl<T> Heap<T>
 where
     T: Default,
@@ -38,6 +39,13 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut index = self.count;
+        while index / 2 > 0 && (self.comparator)(&self.items[index], &self.items[index / 2]) {
+            self.items.swap(index, index / 2);
+            index = index / 2;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +66,31 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        let mut ans = 0;
+		if 2 * idx <= self.count {
+            ans = 2 * idx;
+        }
+
+        if 2 * idx + 1<= self.count && (self.comparator)(&self.items[2 * idx + 1], &self.items[2 * idx]){
+            ans = 2 * idx + 1;
+        }
+        ans
+    }
+
+    fn down(&mut self, idx: usize) {
+        let mut cur = idx;
+        if 2 * idx <= self.count && (self.comparator)(&self.items[2 * idx], &self.items[cur]) {
+            cur = 2 * idx;
+        }
+
+        if 2 * idx + 1 <= self.count && (self.comparator)(&self.items[2 * idx + 1], &self.items[cur]) {
+            cur = 2 * idx + 1;
+        }
+
+        if cur != idx {
+            self.items.swap(idx, cur);
+            self.down(cur);
+        }
     }
 }
 
@@ -84,8 +116,14 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+        self.items.swap(1, self.count);
+        let result = self.items.pop();
+        self.count -= 1;
+        self.down(1);
+        result
     }
 }
 
